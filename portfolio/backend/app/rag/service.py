@@ -12,16 +12,12 @@ PROMPT = ChatPromptTemplate.from_messages(
             """
 You are the AI assistant for the Ragwar Tech portfolio.
 
-Answer questions using the supplied portfolio context.
+Answer using the supplied portfolio context.
 
-Rules:
+Do not invent projects, clients, employment,
+credentials, metrics, or accomplishments.
 
-1. Only make claims supported by the context.
-2. Do not invent employment history,
-   clients, credentials, projects, or metrics.
-3. If the context does not contain the answer,
-   say that the information is not available.
-4. Be concise but technically useful.
+If information is unavailable, say so.
 
 Portfolio context:
 
@@ -41,38 +37,45 @@ class PortfolioRAG:
     def __init__(self):
 
         self.retriever = None
-
         self.llm = None
-
-        if settings.ai_api_key:
-
-            self.retriever = build_retriever()
-
-            self.llm = ChatOpenAI(
-                model=settings.ai_model,
-                api_key=settings.ai_api_key,
-                temperature=0,
-            )
+        self.initialized = False
 
 
-    def answer(
-        self,
-        question: str,
-    ):
+    def initialize(self):
+
+        if self.initialized:
+            return
+
+        if not settings.ai_api_key:
+            return
+
+        self.retriever = build_retriever()
+
+        self.llm = ChatOpenAI(
+            model=settings.ai_model,
+            api_key=settings.ai_api_key,
+            temperature=0,
+        )
+
+        self.initialized = True
+
+
+    def answer(self, question: str):
+
+        self.initialize()
 
         if not self.retriever:
 
-            return (
-                "The portfolio RAG system is not "
-                "configured yet. Add AI_API_KEY "
-                "to backend/.env."
-            )
+            return {
+                "response": (
+                    "The AI service is not configured."
+                ),
+                "sources": [],
+            }
 
 
-        documents = (
-            self.retriever.invoke(
-                question
-            )
+        documents = self.retriever.invoke(
+            question
         )
 
 
@@ -82,6 +85,34 @@ class PortfolioRAG:
         )
 
 
+        messages = PROMPT.invoke(
+            {
+                "context": context,
+                "question": question,
+            }
+        )
+
+
+        response = self.llm.invoke(
+            messages
+        )
+
+
+        return {
+            "response": response.content,
+            "sources": [
+                {
+                    "source": document.metadata.get(
+                        "source",
+                        "unknown",
+                    )
+                }
+                for document in documents
+            ],
+        }
+
+
+rag_service = PortfolioRAG()
         messages = PROMPT.invoke(
             {
                 "context": context,

@@ -22,8 +22,15 @@ def health():
     return {
         "status": "ok",
         "service": "framework-freefe-api",
+        "version": "0.2.0",
     }
 
+@router.get("/ready")
+def ready():
+
+    return {
+        "status": "ready",
+    }
 
 @router.post(
     "/contact",
