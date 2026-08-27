@@ -935,3 +935,13 @@ footer a:hover {
   }
 
 }
+
+.chat-sources {
+  margin-bottom: 1rem;
+
+  color: var(--muted);
+
+  font-family: monospace;
+
+  font-size: 0.7rem;
+}

@@ -57,10 +57,6 @@ def chat(
     payload: ChatRequest,
 ):
 
-    response = ai_service.chat(
+    return rag_service.answer(
         payload.message
     )
-
-    return {
-        "response": response
-    }

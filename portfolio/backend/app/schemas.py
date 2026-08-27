@@ -31,6 +31,13 @@ class ChatRequest(BaseModel):
     message: str
 
 
+class ChatSource(BaseModel):
+
+    source: str
+
+
 class ChatResponse(BaseModel):
 
     response: str
+
+    sources: list[ChatSource] = []

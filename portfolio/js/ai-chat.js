@@ -92,13 +92,41 @@ export function initializeAIChat() {
           data.response
         );
 
+if (data.sources?.length) {
+
+  const sources =
+    data.sources
+      .map(source => source.source)
+      .filter(
+        (value, index, array) =>
+          array.indexOf(value) === index
+      );
+
+  addSources(
+    sources
+  );
+}
 
       } catch (error) {
 
         console.error(error);
 
         loading.remove();
+function addSources(sources) {
 
+  const element =
+    document.createElement("div");
+
+  element.className =
+    "chat-sources";
+
+  element.textContent =
+    `Sources: ${sources.join(", ")}`;
+
+  messages.appendChild(
+    element
+  );
+}
 
         addMessage(
           "assistant",
